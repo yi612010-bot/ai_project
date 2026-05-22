@@ -1,28 +1,25 @@
+
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+import os
 
-# -----------------------------
-# 페이지 설정
-# -----------------------------
-st.set_page_config(
-    page_title="경기도 인구통계",
-    layout="wide"
-)
+st.set_page_config(page_title="경기도 인구통계", layout="wide")
 
-# -----------------------------
-# 제목
-# -----------------------------
 st.title("📊 경기도의 인구통계")
 
 # -----------------------------
-# 데이터 불러오기
+# CSV 불러오기
 # -----------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("population.csv", encoding="euc-kr")
 
-    # 숫자 컬럼 변환
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+
+    csv_path = os.path.join(BASE_DIR, "population.csv")
+
+    df = pd.read_csv(csv_path, encoding="euc-kr")
+
     age_columns = df.columns[1:]
 
     for col in age_columns:
@@ -45,15 +42,13 @@ region = st.selectbox(
     df["행정구"]
 )
 
-# 선택 데이터
 selected = df[df["행정구"] == region].iloc[0]
 
-# 연령대 / 인구수
 ages = df.columns[1:]
 population = [selected[col] for col in ages]
 
 # -----------------------------
-# Plotly 그래프
+# 그래프
 # -----------------------------
 fig = go.Figure()
 
@@ -62,32 +57,22 @@ fig.add_trace(
         x=ages,
         y=population,
         mode="lines+markers",
-        line=dict(
-            color="red",
-            width=4
-        ),
-        marker=dict(
-            size=8,
-            color="red"
-        )
+        line=dict(color="red", width=4),
+        marker=dict(color="red", size=8)
     )
 )
 
-# -----------------------------
-# 그래프 디자인
-# -----------------------------
 fig.update_layout(
     title={
         "text": "경기도의 인구통계",
-        "x": 0.5,
-        "xanchor": "center"
+        "x": 0.5
     },
 
     xaxis_title="연령대",
     yaxis_title="인구수",
 
-    plot_bgcolor="#EBDCFF",   # 연한 보라색
-    paper_bgcolor="#EBDCFF",
+    plot_bgcolor="#E6D5FF",
+    paper_bgcolor="#E6D5FF",
 
     font=dict(
         family="Malgun Gothic",
@@ -98,21 +83,4 @@ fig.update_layout(
     height=600
 )
 
-# 축 스타일
-fig.update_xaxes(
-    showgrid=True,
-    gridcolor="white"
-)
-
-fig.update_yaxes(
-    showgrid=True,
-    gridcolor="white"
-)
-
-# -----------------------------
-# 출력
-# -----------------------------
-st.plotly_chart(
-    fig,
-    use_container_width=True
-)
+st.plotly_chart(fig, use_container_width=True)
