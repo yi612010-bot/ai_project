@@ -10,24 +10,13 @@ st.set_page_config(
 
 st.title("📊 경기도의 인구통계")
 
-# -----------------------------
-# 데이터 불러오기
-# -----------------------------
 @st.cache_data
 def load_data():
 
-    # 프로젝트 최상위 폴더
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-    # CSV 경로
     csv_path = os.path.join(BASE_DIR, "population.csv")
 
-    # 파일 존재 확인
-    if not os.path.exists(csv_path):
-        st.error(f"CSV 파일을 찾을 수 없습니다: {csv_path}")
-        st.stop()
-
-    # CSV 읽기
     df = pd.read_csv(csv_path, encoding="euc-kr")
 
     # 숫자 변환
@@ -45,22 +34,21 @@ def load_data():
 
 df = load_data()
 
-# -----------------------------
+# 컬럼 확인용
+# st.write(df.columns)
+
 # 행정구 선택
-# -----------------------------
 region = st.selectbox(
     "🏙️ 행정구를 선택하세요",
-    df["행정구"]
+    df["행정구역"]
 )
 
-selected = df[df["행정구"] == region].iloc[0]
+selected = df[df["행정구역"] == region].iloc[0]
 
 ages = df.columns[1:]
 population = [selected[col] for col in ages]
 
-# -----------------------------
 # 그래프
-# -----------------------------
 fig = go.Figure()
 
 fig.add_trace(
@@ -68,20 +56,11 @@ fig.add_trace(
         x=ages,
         y=population,
         mode="lines+markers",
-        line=dict(
-            color="red",
-            width=4
-        ),
-        marker=dict(
-            size=8,
-            color="red"
-        )
+        line=dict(color="red", width=4),
+        marker=dict(color="red", size=8)
     )
 )
 
-# -----------------------------
-# 디자인
-# -----------------------------
 fig.update_layout(
     title={
         "text": "경기도의 인구통계",
@@ -96,8 +75,7 @@ fig.update_layout(
 
     font=dict(
         family="Malgun Gothic",
-        size=14,
-        color="black"
+        size=14
     ),
 
     height=600
