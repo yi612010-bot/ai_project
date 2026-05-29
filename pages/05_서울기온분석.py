@@ -14,17 +14,28 @@ st.set_page_config(
 )
 
 st.title("🌡️ 날짜별 기온분석")
-st.markdown("원하는 월과 일을 선택하면 연도별 최고/최저기온을 확인할 수 있어요!")
+st.markdown("월과 일을 선택하면 연도별 최고/최저기온을 확인할 수 있어요!")
 
 # ---------------------------
 # 데이터 불러오기
 # ---------------------------
 @st.cache_data
 def load_data():
-    df = pd.read_csv("seoul.csv", encoding="euc-kr")
+
+    # 인코딩 오류 대비
+    try:
+        df = pd.read_csv("seoul.csv", encoding="euc-kr")
+    except:
+        df = pd.read_csv("seoul.csv", encoding="utf-8")
 
     # 날짜 변환
-    df["날짜"] = pd.to_datetime(df["날짜"])
+    df["날짜"] = pd.to_datetime(
+        df["날짜"],
+        errors="coerce"
+    )
+
+    # 잘못된 날짜 제거
+    df = df.dropna(subset=["날짜"])
 
     # 연/월/일 컬럼 생성
     df["연도"] = df["날짜"].dt.year
@@ -36,7 +47,7 @@ def load_data():
 df = load_data()
 
 # ---------------------------
-# 사용자 입력
+# 월 / 일 선택
 # ---------------------------
 col1, col2 = st.columns(2)
 
@@ -49,7 +60,9 @@ with col1:
 with col2:
     selected_day = st.selectbox(
         "📌 일 선택",
-        sorted(df[df["월"] == selected_month]["일"].unique())
+        sorted(
+            df[df["월"] == selected_month]["일"].unique()
+        )
     )
 
 # ---------------------------
@@ -74,8 +87,10 @@ fig.add_trace(
         y=filtered_df["최고기온(℃)"],
         mode="lines+markers",
         name="최고기온",
-        line=dict(color="hotpink", width=4),
-        marker=dict(size=7)
+        line=dict(
+            color="hotpink",
+            width=4
+        )
     )
 )
 
@@ -86,52 +101,38 @@ fig.add_trace(
         y=filtered_df["최저기온(℃)"],
         mode="lines+markers",
         name="최저기온",
-        line=dict(color="lightblue", width=4),
-        marker=dict(size=7)
+        line=dict(
+            color="lightblue",
+            width=4
+        )
     )
 )
 
-# 레이아웃 설정
+# 레이아웃
 fig.update_layout(
     title=f"{selected_month}월 {selected_day}일 날짜별 기온분석",
     xaxis_title="연도",
     yaxis_title="온도(℃)",
-    hovermode="x unified",
     template="plotly_white",
-    legend=dict(
-        title="범례",
-        orientation="h",
-        yanchor="bottom",
-        y=1.02,
-        xanchor="right",
-        x=1
-    ),
+    hovermode="x unified",
+    legend_title="범례",
     height=650
 )
 
 # 그래프 출력
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
 # ---------------------------
 # 데이터 테이블
 # ---------------------------
 st.subheader("📊 선택한 날짜 데이터")
 
-show_df = filtered_df[
-    ["연도", "최고기온(℃)", "최저기온(℃)"]
-].reset_index(drop=True)
-
-st.dataframe(show_df, use_container_width=True)
-
-# ---------------------------
-# 추가 정보
-# ---------------------------
-max_temp = filtered_df["최고기온(℃)"].max()
-min_temp = filtered_df["최저기온(℃)"].min()
-
-st.info(
-    f"""
-    🔥 최고기온 최대값: {max_temp}℃  
-    ❄️ 최저기온 최소값: {min_temp}℃
-    """
+st.dataframe(
+    filtered_df[
+        ["연도", "최고기온(℃)", "최저기온(℃)"]
+    ],
+    use_container_width=True
 )
