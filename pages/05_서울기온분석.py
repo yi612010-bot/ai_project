@@ -4,7 +4,6 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from sklearn.linear_model import LinearRegression
-import numpy as np
 
 # ---------------------------
 # 페이지 설정
@@ -16,7 +15,9 @@ st.set_page_config(
 )
 
 st.title("🌡️ 날짜별 기온분석")
-st.markdown("원하는 월과 일을 선택하면 연도별 최고/최저기온과 미래 기온 예측을 확인할 수 있어요!")
+st.markdown(
+    "월과 일을 선택하면 연도별 최고/최저기온과 미래 기온 예측을 확인할 수 있어요!"
+)
 
 # ---------------------------
 # 데이터 불러오기
@@ -24,10 +25,17 @@ st.markdown("원하는 월과 일을 선택하면 연도별 최고/최저기온�
 @st.cache_data
 def load_data():
 
+    # 인코딩 예외 처리
     try:
-        df = pd.read_csv("seoul.csv", encoding="euc-kr")
+        df = pd.read_csv(
+            "seoul.csv",
+            encoding="euc-kr"
+        )
     except:
-        df = pd.read_csv("seoul.csv", encoding="utf-8")
+        df = pd.read_csv(
+            "seoul.csv",
+            encoding="utf-8"
+        )
 
     # 날짜 변환
     df["날짜"] = pd.to_datetime(
@@ -35,8 +43,27 @@ def load_data():
         errors="coerce"
     )
 
-    # 오류 데이터 제거
+    # 날짜 오류 제거
     df = df.dropna(subset=["날짜"])
+
+    # 숫자형 변환
+    df["최고기온(℃)"] = pd.to_numeric(
+        df["최고기온(℃)"],
+        errors="coerce"
+    )
+
+    df["최저기온(℃)"] = pd.to_numeric(
+        df["최저기온(℃)"],
+        errors="coerce"
+    )
+
+    # 결측치 제거
+    df = df.dropna(
+        subset=[
+            "최고기온(℃)",
+            "최저기온(℃)"
+        ]
+    )
 
     # 연/월/일 생성
     df["연도"] = df["날짜"].dt.year
@@ -48,7 +75,7 @@ def load_data():
 df = load_data()
 
 # ---------------------------
-# 사용자 선택
+# 사용자 입력
 # ---------------------------
 col1, col2, col3 = st.columns(3)
 
@@ -68,7 +95,7 @@ with col2:
 
 with col3:
     future_year = st.number_input(
-        "🔮 미래 연도 입력",
+        "🔮 미래 연도 선택",
         min_value=int(df["연도"].max() + 1),
         max_value=2100,
         value=2030
@@ -85,27 +112,33 @@ filtered_df = df[
 filtered_df = filtered_df.sort_values("연도")
 
 # ---------------------------
-# 머신러닝 예측
+# 예측용 데이터
 # ---------------------------
 X = filtered_df[["연도"]]
 
-# 최고기온 모델
+# 최고기온 예측
 y_max = filtered_df["최고기온(℃)"]
 
 model_max = LinearRegression()
 model_max.fit(X, y_max)
 
-pred_max = model_max.predict([[future_year]])[0]
+pred_max = model_max.predict(
+    [[future_year]]
+)[0]
 
-# 최저기온 모델
+# 최저기온 예측
 y_min = filtered_df["최저기온(℃)"]
 
 model_min = LinearRegression()
 model_min.fit(X, y_min)
 
-pred_min = model_min.predict([[future_year]])[0]
+pred_min = model_min.predict(
+    [[future_year]]
+)[0]
 
+# ---------------------------
 # 예측 데이터 추가
+# ---------------------------
 prediction_df = pd.DataFrame({
     "연도": [future_year],
     "최고기온(℃)": [pred_max],
@@ -135,7 +168,6 @@ fig.add_trace(
         ),
         marker=dict(size=8),
 
-        # 마우스 오버 정보
         hovertemplate=
         "<b>연도:</b> %{x}<br>" +
         "<b>최고기온:</b> %{y:.1f}℃<extra></extra>"
@@ -155,7 +187,6 @@ fig.add_trace(
         ),
         marker=dict(size=8),
 
-        # 마우스 오버 정보
         hovertemplate=
         "<b>연도:</b> %{x}<br>" +
         "<b>최저기온:</b> %{y:.1f}℃<extra></extra>"
@@ -163,7 +194,7 @@ fig.add_trace(
 )
 
 # ---------------------------
-# 레이아웃 설정
+# 레이아웃
 # ---------------------------
 fig.update_layout(
     title=f"{selected_month}월 {selected_day}일 날짜별 기온분석",
@@ -182,7 +213,7 @@ st.plotly_chart(
 )
 
 # ---------------------------
-# 예측 결과 출력
+# 미래 예측 결과
 # ---------------------------
 st.subheader("🔮 미래 기온 예측")
 
@@ -190,14 +221,14 @@ col4, col5 = st.columns(2)
 
 with col4:
     st.metric(
-        label=f"{future_year}년 예상 최고기온",
-        value=f"{pred_max:.1f}℃"
+        f"{future_year}년 예상 최고기온",
+        f"{pred_max:.1f}℃"
     )
 
 with col5:
     st.metric(
-        label=f"{future_year}년 예상 최저기온",
-        value=f"{pred_min:.1f}℃"
+        f"{future_year}년 예상 최저기온",
+        f"{pred_min:.1f}℃"
     )
 
 # ---------------------------
