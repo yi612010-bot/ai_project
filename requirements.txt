@@ -2,3 +2,8 @@ streamlit
 folium
 streamlit-folium
 plotly
+streamlit
+pandas
+
+scikit-learn
+numpy
