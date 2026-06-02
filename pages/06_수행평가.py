@@ -54,8 +54,8 @@ df = pd.DataFrame({
 st.markdown(
     """
     <h1 style='text-align:center;
-               color:#b30000;
-               font-size:55px;
+               color:#8b0000;
+               font-size:58px;
                font-weight:bold;'>
     🚨 지역별 성범죄자 수
     </h1>
@@ -68,7 +68,7 @@ st.markdown(
 # ---------------------------------
 st.markdown(
     """
-    <h2 style='font-size:40px;'>
+    <h2 style='font-size:42px;'>
     📍 지역 선택
     </h2>
     """,
@@ -82,7 +82,7 @@ selected_region = st.selectbox(
 )
 
 # ---------------------------------
-# 선택 지역 정보
+# 선택 데이터
 # ---------------------------------
 selected_df = df[df["지역"] == selected_region]
 
@@ -102,15 +102,15 @@ st.success(
 # 엄청 강한 확대
 # ---------------------------------
 zoom_dict = {
-    "서울": 15.5,
-    "부산": 15,
-    "대구": 15,
-    "인천": 14.8,
-    "광주": 15,
-    "대전": 15.5,
-    "울산": 14.8,
-    "세종": 16,
-    "경기": 11.5,
+    "서울": 16,
+    "부산": 15.5,
+    "대구": 15.5,
+    "인천": 15,
+    "광주": 15.5,
+    "대전": 16,
+    "울산": 15,
+    "세종": 17,
+    "경기": 12,
     "강원": 10,
     "충북": 11,
     "충남": 11,
@@ -124,10 +124,10 @@ zoom_dict = {
 selected_zoom = zoom_dict[selected_region]
 
 # ---------------------------------
-# 지도
+# 지도 생성
 # ---------------------------------
 fig = px.scatter_mapbox(
-    selected_df,  # 선택 지역만 표시
+    selected_df,
 
     lat="위도",
     lon="경도",
@@ -143,18 +143,13 @@ fig = px.scatter_mapbox(
         "경도": False
     },
 
-    color_continuous_scale=[
-        [0.0, "#ffe5e5"],
-        [0.3, "#ff9999"],
-        [0.6, "#ff4d4d"],
-        [1.0, "#8b0000"]
-    ],
+    color_continuous_scale="Reds",
 
-    size_max=90,
-
-    height=1100,
+    size_max=100,
 
     zoom=selected_zoom,
+
+    height=1100,
 
     center={
         "lat": selected_lat,
@@ -166,17 +161,9 @@ fig = px.scatter_mapbox(
 # hover 설정
 # ---------------------------------
 fig.update_traces(
-    marker=dict(
-        opacity=0.95,
-        line=dict(
-            width=3,
-            color="black"
-        )
-    ),
-
     hovertemplate=
-    "<b style='font-size:24px'>%{hovertext}</b><br><br>" +
-    "🚨 성범죄자 수: <b>%{marker.size}명</b><br>" +
+    "<b>%{hovertext}</b><br><br>" +
+    "🚨 성범죄자 수: %{marker.size}명<br>" +
     "<extra></extra>"
 )
 
@@ -190,7 +177,7 @@ fig.update_layout(
         "text": f"{selected_region} 성범죄자 현황",
         "x": 0.5,
         "font": {
-            "size": 38
+            "size": 40
         }
     },
 
@@ -202,9 +189,7 @@ fig.update_layout(
     },
 
     coloraxis_colorbar=dict(
-        title="성범죄자 수",
-        tickfont=dict(size=18),
-        titlefont=dict(size=20)
+        title="성범죄자 수"
     )
 )
 
@@ -221,7 +206,7 @@ st.plotly_chart(
 # ---------------------------------
 st.markdown(
     """
-    <h2 style='font-size:40px;'>
+    <h2 style='font-size:42px;'>
     📊 지역별 비교
     </h2>
     """,
@@ -236,22 +221,13 @@ bar_fig = px.bar(
 
     color="성범죄자수",
 
-    color_continuous_scale=[
-        [0.0, "#ffe5e5"],
-        [0.3, "#ff9999"],
-        [0.6, "#ff4d4d"],
-        [1.0, "#8b0000"]
-    ],
+    color_continuous_scale="Reds",
 
     title="지역별 성범죄자 수"
 )
 
 bar_fig.update_layout(
     title_x=0.5,
-
-    xaxis_title="지역",
-    yaxis_title="성범죄자 수",
-
     font=dict(size=18)
 )
 
@@ -267,8 +243,8 @@ st.markdown("---")
 
 st.markdown(
     """
-    <h1 style='font-size:48px;
-               color:#b30000;
+    <h1 style='font-size:50px;
+               color:#8b0000;
                font-weight:bold;'>
     🛡️ 성범죄 예방수칙
     </h1>
@@ -278,8 +254,8 @@ st.markdown(
 
 st.markdown(
     """
-    <div style='font-size:36px;
-                line-height:2.3;
+    <div style='font-size:38px;
+                line-height:2.4;
                 font-weight:bold;'>
 
     🚶 늦은 밤 혼자 다니지 않기<br>
