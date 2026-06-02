@@ -22,6 +22,7 @@ df = pd.DataFrame({
         "전북", "전남", "경북", "경남",
         "제주"
     ],
+
     "성범죄자수": [
         372, 189, 112, 216,
         100, 73, 45, 6,
@@ -29,6 +30,7 @@ df = pd.DataFrame({
         158, 116, 174, 187,
         48
     ],
+
     "위도": [
         37.5665, 35.1796, 35.8714, 37.4563,
         35.1595, 36.3504, 35.5384, 36.4800,
@@ -36,6 +38,7 @@ df = pd.DataFrame({
         35.7175, 34.8679, 36.4919, 35.4606,
         33.4996
     ],
+
     "경도": [
         126.9780, 129.0756, 128.6014, 126.7052,
         126.8526, 127.3845, 129.3114, 127.2890,
@@ -51,7 +54,7 @@ df = pd.DataFrame({
 st.markdown(
     """
     <h1 style='text-align:center;
-               color:#d90429;
+               color:#b30000;
                font-size:52px;
                font-weight:bold;'>
     🚨 지역별 성범죄자 수
@@ -65,7 +68,7 @@ st.markdown(
 # ---------------------------------
 st.markdown(
     """
-    <h2 style='font-size:35px;'>
+    <h2 style='font-size:38px;'>
     📍 지역 선택
     </h2>
     """,
@@ -79,7 +82,7 @@ selected_region = st.selectbox(
 )
 
 # ---------------------------------
-# 선택 데이터
+# 선택 지역 정보
 # ---------------------------------
 selected_df = df[df["지역"] == selected_region]
 
@@ -88,7 +91,7 @@ selected_lat = selected_df["위도"].values[0]
 selected_lon = selected_df["경도"].values[0]
 
 # ---------------------------------
-# 지역 결과
+# 선택 결과
 # ---------------------------------
 st.success(
     f"✅ {selected_region}의 성범죄자 수는 "
@@ -96,47 +99,49 @@ st.success(
 )
 
 # ---------------------------------
-# 지역별 확대 레벨
+# 지역별 확대 수준
 # ---------------------------------
 zoom_dict = {
-    "서울": 12.5,
-    "부산": 12,
-    "대구": 12,
-    "인천": 11.8,
-    "광주": 12,
-    "대전": 12.5,
-    "울산": 11.8,
-    "세종": 13,
-    "경기": 9.5,
-    "강원": 8.5,
-    "충북": 9.5,
-    "충남": 9.3,
-    "전북": 9.5,
-    "전남": 8.5,
-    "경북": 8.5,
-    "경남": 9,
-    "제주": 11
+    "서울": 13.5,
+    "부산": 13,
+    "대구": 13,
+    "인천": 12.8,
+    "광주": 13,
+    "대전": 13.5,
+    "울산": 12.8,
+    "세종": 14,
+    "경기": 10,
+    "강원": 9,
+    "충북": 10,
+    "충남": 10,
+    "전북": 10,
+    "전남": 9,
+    "경북": 9,
+    "경남": 9.5,
+    "제주": 12
 }
 
 selected_zoom = zoom_dict[selected_region]
 
 # ---------------------------------
-# 지도
+# 지도 생성
 # ---------------------------------
 fig = px.scatter_mapbox(
     df,
     lat="위도",
     lon="경도",
+
     size="성범죄자수",
     color="성범죄자수",
+
     hover_name="지역",
+
     hover_data={
         "성범죄자수": True,
         "위도": False,
         "경도": False
     },
 
-    # 색 더 정확하게
     color_continuous_scale=[
         [0.0, "#ffe5e5"],
         [0.3, "#ff9999"],
@@ -145,7 +150,9 @@ fig = px.scatter_mapbox(
     ],
 
     size_max=70,
+
     height=1000,
+
     zoom=selected_zoom,
 
     center={
@@ -155,18 +162,17 @@ fig = px.scatter_mapbox(
 )
 
 # ---------------------------------
-# hover 정확도 향상
+# hover 및 마커 설정
 # ---------------------------------
 fig.update_traces(
     marker=dict(
-        sizemode='area',
         opacity=0.9,
-        line=dict(width=2, color='darkred')
+        line=dict(width=2)
     ),
 
     hovertemplate=
-    "<b style='font-size:20px;'>%{hovertext}</b><br><br>" +
-    "🚨 성범죄자 수: <b>%{marker.size}명</b><br>" +
+    "<b>%{hovertext}</b><br><br>" +
+    "🚨 성범죄자 수: %{marker.size}명<br>" +
     "<extra></extra>"
 )
 
@@ -184,12 +190,15 @@ fig.update_layout(
         }
     },
 
-    margin={"r":0,"t":70,"l":0,"b":0},
+    margin={
+        "r": 0,
+        "t": 70,
+        "l": 0,
+        "b": 0
+    },
 
     coloraxis_colorbar=dict(
-        title="성범죄자 수",
-        tickfont=dict(size=16),
-        titlefont=dict(size=18)
+        title="성범죄자 수"
     )
 )
 
@@ -206,7 +215,7 @@ st.plotly_chart(
 # ---------------------------------
 st.markdown(
     """
-    <h2 style='font-size:35px;'>
+    <h2 style='font-size:38px;'>
     📊 지역별 비교
     </h2>
     """,
@@ -215,8 +224,10 @@ st.markdown(
 
 bar_fig = px.bar(
     df.sort_values("성범죄자수", ascending=False),
+
     x="지역",
     y="성범죄자수",
+
     color="성범죄자수",
 
     color_continuous_scale=[
@@ -231,8 +242,10 @@ bar_fig = px.bar(
 
 bar_fig.update_layout(
     title_x=0.5,
+
     xaxis_title="지역",
     yaxis_title="성범죄자 수",
+
     font=dict(size=16)
 )
 
@@ -248,8 +261,9 @@ st.markdown("---")
 
 st.markdown(
     """
-    <h1 style='font-size:42px;
-               color:#d90429;'>
+    <h1 style='font-size:44px;
+               color:#b30000;
+               font-weight:bold;'>
     🛡️ 성범죄 예방수칙
     </h1>
     """,
@@ -258,8 +272,9 @@ st.markdown(
 
 st.markdown(
     """
-    <div style='font-size:30px;
-                line-height:2.2;'>
+    <div style='font-size:32px;
+                line-height:2.2;
+                font-weight:bold;'>
 
     🚶 늦은 밤 혼자 다니지 않기<br>
 
