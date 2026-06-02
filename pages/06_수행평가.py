@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-import json
 
 # -----------------------------
 # 페이지 설정
@@ -12,18 +11,21 @@ st.set_page_config(
     layout="wide"
 )
 
+# -----------------------------
+# 제목
+# -----------------------------
 st.title("🚨 지역별 성범죄자 수")
 
 # -----------------------------
 # 데이터
 # -----------------------------
-data = {
-    "시도명": [
-        "서울특별시", "부산광역시", "대구광역시", "인천광역시",
-        "광주광역시", "대전광역시", "울산광역시", "세종특별자치시",
-        "경기도", "강원특별자치도", "충청북도", "충청남도",
-        "전북특별자치도", "전라남도", "경상북도", "경상남도",
-        "제주특별자치도"
+df = pd.DataFrame({
+    "지역": [
+        "서울", "부산", "대구", "인천",
+        "광주", "대전", "울산", "세종",
+        "경기", "강원", "충북", "충남",
+        "전북", "전남", "경북", "경남",
+        "제주"
     ],
     "성범죄자수": [
         372, 189, 112, 216,
@@ -31,53 +33,63 @@ data = {
         677, 127, 113, 188,
         158, 116, 174, 187,
         48
+    ],
+    "위도": [
+        37.5665, 35.1796, 35.8714, 37.4563,
+        35.1595, 36.3504, 35.5384, 36.4800,
+        37.4138, 37.8228, 36.6357, 36.5184,
+        35.7175, 34.8679, 36.4919, 35.4606,
+        33.4996
+    ],
+    "경도": [
+        126.9780, 129.0756, 128.6014, 126.7052,
+        126.8526, 127.3845, 129.3114, 127.2890,
+        127.5183, 128.1555, 127.4914, 126.8000,
+        127.1530, 126.9910, 128.8889, 128.2132,
+        126.5312
     ]
-}
-
-df = pd.DataFrame(data)
+})
 
 # -----------------------------
-# 지역 선택
+# 사이드바
 # -----------------------------
 st.sidebar.header("📍 지역 선택")
 
 selected_region = st.sidebar.selectbox(
     "지역을 선택하세요",
-    df["시도명"]
+    df["지역"]
 )
 
-selected_value = df[df["시도명"] == selected_region]["성범죄자수"].values[0]
+selected_value = df[df["지역"] == selected_region]["성범죄자수"].values[0]
 
 st.sidebar.success(
     f"{selected_region}의 성범죄자 수는 {selected_value}명 입니다."
 )
 
 # -----------------------------
-# GeoJSON 불러오기
+# 지도 시각화
 # -----------------------------
-with open("korea_geo.json", encoding="utf-8") as f:
-    geojson = json.load(f)
-
-# -----------------------------
-# 지도
-# -----------------------------
-fig = px.choropleth_mapbox(
+fig = px.scatter_mapbox(
     df,
-    geojson=geojson,
-    locations="시도명",
-    featureidkey="properties.name",
+    lat="위도",
+    lon="경도",
+    size="성범죄자수",
     color="성범죄자수",
-    hover_name="시도명",
-    hover_data={"성범죄자수": True},
+    hover_name="지역",
+    hover_data={
+        "성범죄자수": True,
+        "위도": False,
+        "경도": False
+    },
     color_continuous_scale="Reds",
-    mapbox_style="carto-positron",
-    zoom=5.7,
+    zoom=5.5,
     center={"lat": 36.5, "lon": 127.8},
-    opacity=0.85,
-    height=800
+    height=800,
+    size_max=40
 )
 
 fig.update_layout(
+    mapbox_style="carto-positron",
     title={
         "text": "지역별 성범죄자 수",
         "x": 0.5
@@ -91,13 +103,13 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # -----------------------------
-# 막대그래프
+# 막대 그래프
 # -----------------------------
 st.subheader("📊 지역별 비교")
 
 bar_fig = px.bar(
     df.sort_values("성범죄자수", ascending=False),
-    x="시도명",
+    x="지역",
     y="성범죄자수",
     color="성범죄자수",
     color_continuous_scale="Reds",
