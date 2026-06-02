@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import json
-import requests
 
 # -----------------------------
 # 페이지 설정
@@ -16,7 +15,7 @@ st.set_page_config(
 st.title("🚨 지역별 성범죄자 수")
 
 # -----------------------------
-# 데이터 불러오기
+# 데이터
 # -----------------------------
 data = {
     "시도명": [
@@ -54,14 +53,13 @@ st.sidebar.success(
 )
 
 # -----------------------------
-# 지도용 GeoJSON 불러오기
+# GeoJSON 불러오기
 # -----------------------------
-geojson_url = "https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2013/json/skorea-provinces-2013-geo.json"
-
-geojson = requests.get(geojson_url).json()
+with open("korea_geo.json", encoding="utf-8") as f:
+    geojson = json.load(f)
 
 # -----------------------------
-# 지도 시각화
+# 지도
 # -----------------------------
 fig = px.choropleth_mapbox(
     df,
@@ -70,22 +68,19 @@ fig = px.choropleth_mapbox(
     featureidkey="properties.name",
     color="성범죄자수",
     hover_name="시도명",
-    hover_data={
-        "성범죄자수": True
-    },
+    hover_data={"성범죄자수": True},
     color_continuous_scale="Reds",
     mapbox_style="carto-positron",
     zoom=5.7,
     center={"lat": 36.5, "lon": 127.8},
-    opacity=0.8,
-    height=750,
+    opacity=0.85,
+    height=800
 )
 
 fig.update_layout(
     title={
         "text": "지역별 성범죄자 수",
-        "x": 0.5,
-        "xanchor": "center"
+        "x": 0.5
     },
     margin={"r":0,"t":60,"l":0,"b":0},
     coloraxis_colorbar=dict(
@@ -96,7 +91,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # -----------------------------
-# 막대 그래프
+# 막대그래프
 # -----------------------------
 st.subheader("📊 지역별 비교")
 
@@ -109,32 +104,25 @@ bar_fig = px.bar(
     title="지역별 성범죄자 수"
 )
 
-bar_fig.update_layout(
-    xaxis_title="지역",
-    yaxis_title="성범죄자 수"
-)
-
 st.plotly_chart(bar_fig, use_container_width=True)
 
 # -----------------------------
-# 예방 수칙
+# 예방수칙
 # -----------------------------
 st.markdown("---")
 
-st.subheader("🛡️ 성범죄 예방 수칙")
+st.subheader("🛡️ 성범죄 예방수칙")
 
-tips = """
-1. 🚶 밤늦게 혼자 다니는 것을 피하기  
-2. 📱 위급 상황 시 즉시 112 신고하기  
-3. 🔒 문단속과 비밀번호 철저히 관리하기  
-4. 👥 사람이 많은 길로 이동하기  
-5. 📍 가족이나 친구에게 위치 공유하기  
-6. 🚨 위험 상황 발생 시 주변에 도움 요청하기  
-"""
-
-st.info(tips)
+st.info("""
+1. 🚶 늦은 밤 혼자 다니지 않기  
+2. 📱 위급 시 112 신고하기  
+3. 🔒 출입문 잠금 확인하기  
+4. 👥 사람이 많은 길 이용하기  
+5. 📍 가족·친구와 위치 공유하기  
+6. 🚨 위험하면 즉시 도움 요청하기
+""")
 
 # -----------------------------
 # 출처
 # -----------------------------
-st.caption("출처: 여성가족부 성범죄자 지역별 집계 현황")
+st.caption("출처 : 여성가족부")
