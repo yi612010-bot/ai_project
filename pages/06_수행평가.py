@@ -51,8 +51,9 @@ df = pd.DataFrame({
 st.markdown(
     """
     <h1 style='text-align:center;
-               color:red;
-               font-size:48px;'>
+               color:#d90429;
+               font-size:52px;
+               font-weight:bold;'>
     🚨 지역별 성범죄자 수
     </h1>
     """,
@@ -62,7 +63,14 @@ st.markdown(
 # ---------------------------------
 # 지역 선택
 # ---------------------------------
-st.markdown("## 📍 지역 선택")
+st.markdown(
+    """
+    <h2 style='font-size:35px;'>
+    📍 지역 선택
+    </h2>
+    """,
+    unsafe_allow_html=True
+)
 
 selected_region = st.selectbox(
     "지역 선택",
@@ -71,7 +79,7 @@ selected_region = st.selectbox(
 )
 
 # ---------------------------------
-# 선택 지역 데이터
+# 선택 데이터
 # ---------------------------------
 selected_df = df[df["지역"] == selected_region]
 
@@ -80,7 +88,7 @@ selected_lat = selected_df["위도"].values[0]
 selected_lon = selected_df["경도"].values[0]
 
 # ---------------------------------
-# 지역 결과 표시
+# 지역 결과
 # ---------------------------------
 st.success(
     f"✅ {selected_region}의 성범죄자 수는 "
@@ -88,32 +96,32 @@ st.success(
 )
 
 # ---------------------------------
-# 확대 수준 설정
+# 지역별 확대 레벨
 # ---------------------------------
 zoom_dict = {
-    "서울": 10.8,
-    "부산": 10.5,
-    "대구": 10.5,
-    "인천": 10.3,
-    "광주": 10.5,
-    "대전": 10.8,
-    "울산": 10.3,
-    "세종": 11.5,
-    "경기": 8.8,
-    "강원": 7.8,
-    "충북": 8.5,
-    "충남": 8.3,
-    "전북": 8.8,
-    "전남": 7.8,
-    "경북": 7.6,
-    "경남": 8.0,
-    "제주": 9.5
+    "서울": 12.5,
+    "부산": 12,
+    "대구": 12,
+    "인천": 11.8,
+    "광주": 12,
+    "대전": 12.5,
+    "울산": 11.8,
+    "세종": 13,
+    "경기": 9.5,
+    "강원": 8.5,
+    "충북": 9.5,
+    "충남": 9.3,
+    "전북": 9.5,
+    "전남": 8.5,
+    "경북": 8.5,
+    "경남": 9,
+    "제주": 11
 }
 
 selected_zoom = zoom_dict[selected_region]
 
 # ---------------------------------
-# 지도 생성
+# 지도
 # ---------------------------------
 fig = px.scatter_mapbox(
     df,
@@ -127,10 +135,19 @@ fig = px.scatter_mapbox(
         "위도": False,
         "경도": False
     },
-    color_continuous_scale="Reds",
-    size_max=60,
-    height=950,
+
+    # 색 더 정확하게
+    color_continuous_scale=[
+        [0.0, "#ffe5e5"],
+        [0.3, "#ff9999"],
+        [0.6, "#ff4d4d"],
+        [1.0, "#b30000"]
+    ],
+
+    size_max=70,
+    height=1000,
     zoom=selected_zoom,
+
     center={
         "lat": selected_lat,
         "lon": selected_lon
@@ -138,31 +155,42 @@ fig = px.scatter_mapbox(
 )
 
 # ---------------------------------
+# hover 정확도 향상
+# ---------------------------------
+fig.update_traces(
+    marker=dict(
+        sizemode='area',
+        opacity=0.9,
+        line=dict(width=2, color='darkred')
+    ),
+
+    hovertemplate=
+    "<b style='font-size:20px;'>%{hovertext}</b><br><br>" +
+    "🚨 성범죄자 수: <b>%{marker.size}명</b><br>" +
+    "<extra></extra>"
+)
+
+# ---------------------------------
 # 지도 스타일
 # ---------------------------------
 fig.update_layout(
     mapbox_style="open-street-map",
+
     title={
         "text": "지역별 성범죄자 수",
         "x": 0.5,
         "font": {
-            "size": 32
+            "size": 34
         }
     },
-    margin={"r":0,"t":70,"l":0,"b":0},
-    coloraxis_colorbar=dict(
-        title="성범죄자 수"
-    )
-)
 
-# ---------------------------------
-# hover 디자인
-# ---------------------------------
-fig.update_traces(
-    hovertemplate=
-    "<b>%{hovertext}</b><br>" +
-    "성범죄자 수: %{marker.size}명<br>" +
-    "<extra></extra>"
+    margin={"r":0,"t":70,"l":0,"b":0},
+
+    coloraxis_colorbar=dict(
+        title="성범죄자 수",
+        tickfont=dict(size=16),
+        titlefont=dict(size=18)
+    )
 )
 
 # ---------------------------------
@@ -176,21 +204,36 @@ st.plotly_chart(
 # ---------------------------------
 # 막대 그래프
 # ---------------------------------
-st.markdown("## 📊 지역별 비교")
+st.markdown(
+    """
+    <h2 style='font-size:35px;'>
+    📊 지역별 비교
+    </h2>
+    """,
+    unsafe_allow_html=True
+)
 
 bar_fig = px.bar(
     df.sort_values("성범죄자수", ascending=False),
     x="지역",
     y="성범죄자수",
     color="성범죄자수",
-    color_continuous_scale="Reds",
+
+    color_continuous_scale=[
+        [0.0, "#ffe5e5"],
+        [0.3, "#ff9999"],
+        [0.6, "#ff4d4d"],
+        [1.0, "#b30000"]
+    ],
+
     title="지역별 성범죄자 수"
 )
 
 bar_fig.update_layout(
     title_x=0.5,
     xaxis_title="지역",
-    yaxis_title="성범죄자 수"
+    yaxis_title="성범죄자 수",
+    font=dict(size=16)
 )
 
 st.plotly_chart(
@@ -203,21 +246,37 @@ st.plotly_chart(
 # ---------------------------------
 st.markdown("---")
 
-st.markdown("## 🛡️ 성범죄 예방수칙")
+st.markdown(
+    """
+    <h1 style='font-size:42px;
+               color:#d90429;'>
+    🛡️ 성범죄 예방수칙
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
 
-st.info("""
-🚶 늦은 밤 혼자 다니지 않기
+st.markdown(
+    """
+    <div style='font-size:30px;
+                line-height:2.2;'>
 
-📱 위급 상황 시 112 신고하기
+    🚶 늦은 밤 혼자 다니지 않기<br>
 
-🔒 출입문 잠금 철저히 하기
+    📱 위급 상황 시 112 신고하기<br>
 
-👥 사람이 많은 길 이용하기
+    🔒 출입문 잠금 철저히 하기<br>
 
-📍 가족·친구와 위치 공유하기
+    👥 사람이 많은 길 이용하기<br>
 
-🚨 위험 상황 시 주변에 도움 요청하기
-""")
+    📍 가족·친구와 위치 공유하기<br>
+
+    🚨 위험 상황 시 주변에 도움 요청하기
+
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 # ---------------------------------
 # 출처
