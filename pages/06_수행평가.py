@@ -2,23 +2,18 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# -----------------------------
+# ---------------------------------
 # 페이지 설정
-# -----------------------------
+# ---------------------------------
 st.set_page_config(
     page_title="지역별 성범죄자 수",
     page_icon="🚨",
     layout="wide"
 )
 
-# -----------------------------
-# 제목
-# -----------------------------
-st.title("🚨 지역별 성범죄자 수")
-
-# -----------------------------
+# ---------------------------------
 # 데이터
-# -----------------------------
+# ---------------------------------
 df = pd.DataFrame({
     "지역": [
         "서울", "부산", "대구", "인천",
@@ -50,25 +45,49 @@ df = pd.DataFrame({
     ]
 })
 
-# -----------------------------
-# 사이드바
-# -----------------------------
-st.sidebar.header("📍 지역 선택")
+# ---------------------------------
+# 제목
+# ---------------------------------
+st.markdown(
+    """
+    <h1 style='text-align:center; color:red;'>
+    🚨 지역별 성범죄자 수
+    </h1>
+    """,
+    unsafe_allow_html=True
+)
 
-selected_region = st.sidebar.selectbox(
+# ---------------------------------
+# 지역 선택 크게 만들기
+# ---------------------------------
+st.markdown("## 📍 지역 선택")
+
+selected_region = st.selectbox(
     "지역을 선택하세요",
-    df["지역"]
+    df["지역"],
+    label_visibility="collapsed"
 )
 
-selected_value = df[df["지역"] == selected_region]["성범죄자수"].values[0]
+# ---------------------------------
+# 선택 지역 데이터
+# ---------------------------------
+selected_df = df[df["지역"] == selected_region]
 
-st.sidebar.success(
-    f"{selected_region}의 성범죄자 수는 {selected_value}명 입니다."
+selected_value = selected_df["성범죄자수"].values[0]
+selected_lat = selected_df["위도"].values[0]
+selected_lon = selected_df["경도"].values[0]
+
+# ---------------------------------
+# 선택 결과 표시
+# ---------------------------------
+st.success(
+    f"✅ {selected_region}의 성범죄자 수는 "
+    f"{selected_value}명 입니다."
 )
 
-# -----------------------------
-# 지도 시각화
-# -----------------------------
+# ---------------------------------
+# 지도 확대 설정
+# ---------------------------------
 fig = px.scatter_mapbox(
     df,
     lat="위도",
@@ -82,30 +101,45 @@ fig = px.scatter_mapbox(
         "경도": False
     },
     color_continuous_scale="Reds",
-    zoom=5.5,
-    center={"lat": 36.5, "lon": 127.8},
-    height=800,
-    size_max=40
+    size_max=50,
+    height=850,
+    zoom=7.5,  # 확대
+    center={
+        "lat": selected_lat,
+        "lon": selected_lon
+    }
 )
 
+# ---------------------------------
+# 지도 디자인
+# ---------------------------------
 fig.update_layout(
     mapbox_style="carto-positron",
     title={
         "text": "지역별 성범죄자 수",
-        "x": 0.5
+        "x": 0.5,
+        "font": {
+            "size": 28
+        }
     },
-    margin={"r":0,"t":60,"l":0,"b":0},
+    margin={"r":0,"t":70,"l":0,"b":0},
     coloraxis_colorbar=dict(
         title="성범죄자 수"
     )
 )
 
-st.plotly_chart(fig, use_container_width=True)
+# ---------------------------------
+# 지도 출력
+# ---------------------------------
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
-# -----------------------------
+# ---------------------------------
 # 막대 그래프
-# -----------------------------
-st.subheader("📊 지역별 비교")
+# ---------------------------------
+st.markdown("## 📊 지역별 비교")
 
 bar_fig = px.bar(
     df.sort_values("성범죄자수", ascending=False),
@@ -116,25 +150,39 @@ bar_fig = px.bar(
     title="지역별 성범죄자 수"
 )
 
-st.plotly_chart(bar_fig, use_container_width=True)
+bar_fig.update_layout(
+    xaxis_title="지역",
+    yaxis_title="성범죄자 수",
+    title_x=0.5
+)
 
-# -----------------------------
+st.plotly_chart(
+    bar_fig,
+    use_container_width=True
+)
+
+# ---------------------------------
 # 예방수칙
-# -----------------------------
+# ---------------------------------
 st.markdown("---")
 
-st.subheader("🛡️ 성범죄 예방수칙")
+st.markdown("## 🛡️ 성범죄 예방수칙")
 
 st.info("""
-1. 🚶 늦은 밤 혼자 다니지 않기  
-2. 📱 위급 시 112 신고하기  
-3. 🔒 출입문 잠금 확인하기  
-4. 👥 사람이 많은 길 이용하기  
-5. 📍 가족·친구와 위치 공유하기  
-6. 🚨 위험하면 즉시 도움 요청하기
+🚶 늦은 밤 혼자 다니지 않기
+
+📱 위급 상황 시 112 신고하기
+
+🔒 문단속 철저히 하기
+
+👥 사람이 많은 길 이용하기
+
+📍 가족·친구와 위치 공유하기
+
+🚨 위험 상황 시 주변에 도움 요청하기
 """)
 
-# -----------------------------
+# ---------------------------------
 # 출처
-# -----------------------------
+# ---------------------------------
 st.caption("출처 : 여성가족부")
