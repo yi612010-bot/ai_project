@@ -52,7 +52,7 @@ st.markdown(
     """
     <h1 style='text-align:center;
                color:red;
-               font-size:45px;'>
+               font-size:48px;'>
     🚨 지역별 성범죄자 수
     </h1>
     """,
@@ -65,13 +65,13 @@ st.markdown(
 st.markdown("## 📍 지역 선택")
 
 selected_region = st.selectbox(
-    "지역을 선택하세요",
+    "지역 선택",
     df["지역"],
     label_visibility="collapsed"
 )
 
 # ---------------------------------
-# 선택 지역 정보
+# 선택 지역 데이터
 # ---------------------------------
 selected_df = df[df["지역"] == selected_region]
 
@@ -80,7 +80,7 @@ selected_lat = selected_df["위도"].values[0]
 selected_lon = selected_df["경도"].values[0]
 
 # ---------------------------------
-# 안내 박스
+# 지역 결과 표시
 # ---------------------------------
 st.success(
     f"✅ {selected_region}의 성범죄자 수는 "
@@ -88,7 +88,32 @@ st.success(
 )
 
 # ---------------------------------
-# 지도
+# 확대 수준 설정
+# ---------------------------------
+zoom_dict = {
+    "서울": 10.8,
+    "부산": 10.5,
+    "대구": 10.5,
+    "인천": 10.3,
+    "광주": 10.5,
+    "대전": 10.8,
+    "울산": 10.3,
+    "세종": 11.5,
+    "경기": 8.8,
+    "강원": 7.8,
+    "충북": 8.5,
+    "충남": 8.3,
+    "전북": 8.8,
+    "전남": 7.8,
+    "경북": 7.6,
+    "경남": 8.0,
+    "제주": 9.5
+}
+
+selected_zoom = zoom_dict[selected_region]
+
+# ---------------------------------
+# 지도 생성
 # ---------------------------------
 fig = px.scatter_mapbox(
     df,
@@ -103,9 +128,9 @@ fig = px.scatter_mapbox(
         "경도": False
     },
     color_continuous_scale="Reds",
-    size_max=55,
-    height=900,
-    zoom=9.5,   # 더 강하게 확대
+    size_max=60,
+    height=950,
+    zoom=selected_zoom,
     center={
         "lat": selected_lat,
         "lon": selected_lon
@@ -116,12 +141,12 @@ fig = px.scatter_mapbox(
 # 지도 스타일
 # ---------------------------------
 fig.update_layout(
-    mapbox_style="open-street-map",  # 한국어 지도
+    mapbox_style="open-street-map",
     title={
         "text": "지역별 성범죄자 수",
         "x": 0.5,
         "font": {
-            "size": 30
+            "size": 32
         }
     },
     margin={"r":0,"t":70,"l":0,"b":0},
@@ -131,7 +156,7 @@ fig.update_layout(
 )
 
 # ---------------------------------
-# hover 스타일
+# hover 디자인
 # ---------------------------------
 fig.update_traces(
     hovertemplate=
