@@ -50,7 +50,9 @@ df = pd.DataFrame({
 # ---------------------------------
 st.markdown(
     """
-    <h1 style='text-align:center; color:red;'>
+    <h1 style='text-align:center;
+               color:red;
+               font-size:45px;'>
     🚨 지역별 성범죄자 수
     </h1>
     """,
@@ -58,7 +60,7 @@ st.markdown(
 )
 
 # ---------------------------------
-# 지역 선택 크게 만들기
+# 지역 선택
 # ---------------------------------
 st.markdown("## 📍 지역 선택")
 
@@ -69,7 +71,7 @@ selected_region = st.selectbox(
 )
 
 # ---------------------------------
-# 선택 지역 데이터
+# 선택 지역 정보
 # ---------------------------------
 selected_df = df[df["지역"] == selected_region]
 
@@ -78,7 +80,7 @@ selected_lat = selected_df["위도"].values[0]
 selected_lon = selected_df["경도"].values[0]
 
 # ---------------------------------
-# 선택 결과 표시
+# 안내 박스
 # ---------------------------------
 st.success(
     f"✅ {selected_region}의 성범죄자 수는 "
@@ -86,7 +88,7 @@ st.success(
 )
 
 # ---------------------------------
-# 지도 확대 설정
+# 지도
 # ---------------------------------
 fig = px.scatter_mapbox(
     df,
@@ -101,9 +103,9 @@ fig = px.scatter_mapbox(
         "경도": False
     },
     color_continuous_scale="Reds",
-    size_max=50,
-    height=850,
-    zoom=7.5,  # 확대
+    size_max=55,
+    height=900,
+    zoom=9.5,   # 더 강하게 확대
     center={
         "lat": selected_lat,
         "lon": selected_lon
@@ -111,21 +113,31 @@ fig = px.scatter_mapbox(
 )
 
 # ---------------------------------
-# 지도 디자인
+# 지도 스타일
 # ---------------------------------
 fig.update_layout(
-    mapbox_style="carto-positron",
+    mapbox_style="open-street-map",  # 한국어 지도
     title={
         "text": "지역별 성범죄자 수",
         "x": 0.5,
         "font": {
-            "size": 28
+            "size": 30
         }
     },
     margin={"r":0,"t":70,"l":0,"b":0},
     coloraxis_colorbar=dict(
         title="성범죄자 수"
     )
+)
+
+# ---------------------------------
+# hover 스타일
+# ---------------------------------
+fig.update_traces(
+    hovertemplate=
+    "<b>%{hovertext}</b><br>" +
+    "성범죄자 수: %{marker.size}명<br>" +
+    "<extra></extra>"
 )
 
 # ---------------------------------
@@ -151,9 +163,9 @@ bar_fig = px.bar(
 )
 
 bar_fig.update_layout(
+    title_x=0.5,
     xaxis_title="지역",
-    yaxis_title="성범죄자 수",
-    title_x=0.5
+    yaxis_title="성범죄자 수"
 )
 
 st.plotly_chart(
@@ -173,7 +185,7 @@ st.info("""
 
 📱 위급 상황 시 112 신고하기
 
-🔒 문단속 철저히 하기
+🔒 출입문 잠금 철저히 하기
 
 👥 사람이 많은 길 이용하기
 
